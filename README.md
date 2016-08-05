@@ -1,2 +1,3 @@
-# misc
-contains miscellaneous things
+### misc
+
+contains miscellaneous things (resume, non-sabr projects, etc...)
