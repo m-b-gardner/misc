@@ -1,0 +1,62 @@
+##########################################################################
+# Background:                                                            #
+# I was asked by a friend of mine to run an ANOVA to test if there was   #
+# a difference between how races are treated (via arrests and citations) #
+# in Falcon Heights, MN during traffic stops                             #
+#                                                                        #
+# Conclusions:                                                           #
+# Significantly more black individuals are arrested via the binomial     #
+# test, whereas there is no significant evidence that this is the case   #
+# for citations                                                          #
+##########################################################################
+
+# read in data
+arrests <- read.csv("arrests.csv")
+arrests$num <- as.numeric(arrests$TwoBlocks)
+arrests$check <- as.numeric(arrests$Race)
+
+citations <- read.csv("citations.csv")
+citations$num <- as.numeric(citations$TwoBlocks)
+citations$check <- as.numeric(citations$Race)
+
+# never did any work in removing cases that got both a citation, and an arrest
+
+# fit anova models
+# essentially says that race is significant 
+# in the case of arrests but not citations
+mod1 = aov(check~num, data=arrests)
+summary(mod1)
+mod2 = aov(check~num, data=citations)
+summary(mod2)
+
+# anova models include the assumption of indepdence,
+# normality, etc..., checking normality here as it's my biggest concern
+wilcox.test(check~num, data=arrests) # not normal
+wilcox.test(check~num, data=citations) # normal
+
+# conclusions from the citations make me a littlenervous, so I wouldn't put credibility in eitherof these
+
+# check if there's a difference in the rate of arrests
+# subset into two different groups
+blacks <- subset(arrests, arrests$Race=="Black")
+whites <- subset(arrests, arrests$Race=="White")
+# could alternatively subset just a "Black" group and then another group. Data provided only has these two groups
+# though, and the code is more readable with explicitly stating both groups
+
+# This case is actually a binomial distribution
+# -> Make an assumption about the expectation
+prob <- sum(whites$TwoBlocks)/nrow(whites)
+actual_black <- sum(blacks$TwoBlocks)
+total_black <- nrow(blacks)
+binom.test(actual_black, total_black, prob, alternative="greater")
+
+# Follow the same process with citations
+cblacks <- subset(citations, (citations$Race=="Black"))
+cwhites <- subset(citations, (citations$Race=="White"))
+
+cprob <- sum(cwhites$TwoBlocks)/nrow(cwhites)
+actual_cblack <- sum(cblacks$TwoBlocks)
+total_cblack <- nrow(cblacks)
+binom.test(actual_cblack, total_cblack, cprob, alternative="greater")
+
+
